@@ -5,8 +5,8 @@ describe("DateTime formatting", () => {
     const formattedDateTime = utils.format(date, utils.dateTime24hFormat);
 
     expect(formattedDateTime).toBe(
-      // luxon doesn't support relative time (30th)
-      lib === "Luxon" ? "October 30 11:44" : "October 30th 11:44"
+      // luxon & js-joda don't support relative time (30th)
+      lib === "Luxon" || lib === "JsJoda" ? "October 30 11:44" : "October 30th 11:44"
     );
   });
 
@@ -25,7 +25,9 @@ describe("DateTime formatting", () => {
   utilsTest("Should properly format to date", (date, utils, lib) => {
     const formattedDate = utils.format(date, utils.dateFormat);
 
-    expect(formattedDate).toBe(lib === "Luxon" ? "October 30" : "October 30th");
+    expect(formattedDate).toBe(
+      lib === "Luxon" || lib === "JsJoda" ? "October 30" : "October 30th"
+    );
   });
 
   utilsTest("Should properly format to time 24h", (date, utils) => {
