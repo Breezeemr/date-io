@@ -1,5 +1,5 @@
 {
-  "name": "@date-io/js-joda",
+  "name": "@prinzdezibel/date-io-js-joda",
   "version": "0.9.0",
   "description": "Abstraction over common javascript date management libraries",
   "main": "build/index.js",
@@ -9,7 +9,7 @@
     "@js-joda/core": "^1.11.0"
   },
   "dependencies": {
-    "@date-io/core": "^2.0.0"
+    "@date-io/core": "1.3.13"
   },
   "devDependencies": {
     "rollup": "^1.27.7",
