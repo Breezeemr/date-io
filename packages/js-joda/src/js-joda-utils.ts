@@ -48,7 +48,9 @@ export default class JsJodaUtils implements IUtils<LocalDateTime> {
   constructor({ locale } = { locale: undefined }) {
     if (locale) {
       // Weird Hack to execute the locale's module scope, which is needed to register locale
-      require(`@js-joda/locale_${locale.localeString().toLowerCase()}`);
+      require(`@js-joda/locale_${locale
+        .language()
+        .toLowerCase()}-${locale.country().toLowerCase()}`);
       this.locale = locale;
     }
   }

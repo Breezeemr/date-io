@@ -4,7 +4,7 @@ import DateFnsUtils from "../packages/date-fns/src";
 import MomentUtils from "../packages/moment/src";
 import DayJSUtils from "../packages/dayjs/src";
 import JsJodaUtils from "../packages/js-joda/src";
-import { LocalDateTime, Locale as JsJodaLocale } from "@js-joda/locale_en-us";
+import { Locale as JsJodaLocale } from "@js-joda/locale_en-us";
 
 // Time when the first commit to date-io was created
 export const TEST_TIMESTAMP = "2018-10-30T11:44:00.000Z";
