@@ -1,5 +1,9 @@
 # date-io
 
+## This repository is a fork of @dmtrKovalenko/date-io library that provides an adapter for the js-joda date library
+
+**PLEASE NOTE:** Currently version 2 of @date-io/core is _NOT_ supported. This js-joda adapter is written to work with version v1.3.13 of @date-io/core.
+
 Abstraction over common javascript date management libraries.
 
 [![npm package](https://img.shields.io/npm/v/@date-io/core.svg)](https://www.npmjs.org/package/@date-io/core)
@@ -16,36 +20,39 @@ That simplifies timezones management, makes your code return exactly the same ty
 
 ### Projects
 
-| Library           |                                                                                                               Downloads |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------: |
-| @date-io/date-fns | [![npm download](https://img.shields.io/npm/dm/@date-io/date-fns.svg)](https://www.npmjs.org/package/@date-io/date-fns) |
-| @date-io/moment   |     [![npm download](https://img.shields.io/npm/dm/@date-io/moment.svg)](https://www.npmjs.org/package/@date-io/moment) |
-| @date-io/luxon    |       [![npm download](https://img.shields.io/npm/dm/@date-io/luxon.svg)](https://www.npmjs.org/package/@date-io/luxon) |
-| @date-io/dayjs    |       [![npm download](https://img.shields.io/npm/dm/@date-io/dayjs.svg)](https://www.npmjs.org/package/@date-io/dayjs) |
-| @date-io/jalaali  |   [![npm download](https://img.shields.io/npm/dm/@date-io/jalaali.svg)](https://www.npmjs.org/package/@date-io/jalaali) |
-| @date-io/hijri    |       [![npm download](https://img.shields.io/npm/dm/@date-io/hijri.svg)](https://www.npmjs.org/package/@date-io/hijri) |
+| Library                       |                                                                                                                                       Downloads |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------: |
+| @prinzdezibel/date-io-js-joda | [![npm download](https://img.shields.io/npm/dm/@prinzdezibel/date-io-js-joda.svg)](https://www.npmjs.org/package/@prinzdezibel/date-io-js-joda) |
+| @date-io/date-fns             |                         [![npm download](https://img.shields.io/npm/dm/@date-io/date-fns.svg)](https://www.npmjs.org/package/@date-io/date-fns) |
+| @date-io/moment               |                             [![npm download](https://img.shields.io/npm/dm/@date-io/moment.svg)](https://www.npmjs.org/package/@date-io/moment) |
+| @date-io/luxon                |                               [![npm download](https://img.shields.io/npm/dm/@date-io/luxon.svg)](https://www.npmjs.org/package/@date-io/luxon) |
+| @date-io/dayjs                |                               [![npm download](https://img.shields.io/npm/dm/@date-io/dayjs.svg)](https://www.npmjs.org/package/@date-io/dayjs) |
+| @date-io/jalaali              |                           [![npm download](https://img.shields.io/npm/dm/@date-io/jalaali.svg)](https://www.npmjs.org/package/@date-io/jalaali) |
+| @date-io/hijri                |                               [![npm download](https://img.shields.io/npm/dm/@date-io/hijri.svg)](https://www.npmjs.org/package/@date-io/hijri) |
 
 Projects, which are already built over `date-io`:
 
 - [material-ui-pickers](https://github.com/dmtrKovalenko/material-ui-pickers)
 
+### Installation
+
+```sh
+$ npm install @prinzdezibel/date-io-js-joda
+```
+
 ### Usage example
 
 ```js
-import LuxonUtils from "@date-io/luxon";
-import DateFnsUtils from "@date-io/date-fns";
+import JsJodaUtils from "../packages/js-joda/src";
+import { Locale as JsJodaLocale } from "@js-joda/locale_en-us";
 
-const dateFns = new DateFnsUtils();
-const luxon = new LuxonUtils({ locale: "fr" }); // pass french locale
+const jsJoda = new JsJodaUtils({ locale: JsJodaLocale.US }); // pass US locale
 
-const initialLuxonDate = luxon.date("2018-10-28T11:44:00.000Z");
-const initialDateFnsDate = dateFns.date("2018-10-28T11:44:00.000Z");
+const initialJsJodaDate = jsJoda.date("2018-10-28T11:44:00.000Z");
 
-const updatedLuxonDate = luxon.addDays(initialLuxonDate, 2);
-const updatedDateFnsDate = dateFns.addDays(initialDateFnsDate, 2);
+const updatedJodaDate = jsJoda.addDays(initialJsJodaDate, 2);
 
-luxon.format(updatedLuxonDate, utils.dateTime24hFormat); // "octobre 30 11:44"
-dateFns.format(updatedLuxonDate, utils.dateTime24hFormat); // "October 30th 11:44"
+console.log(jsJoda.format(updatedJodaDate, jsJoda.dateTime24hFormat)); // "October 30 11:44"
 ```
 
 ### Interface
