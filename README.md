@@ -1,6 +1,6 @@
 # date-io
 
-## This repository is a fork of @dmtrKovalenko/date-io library that provides an adapter for the js-joda date library
+## This repository is a fork of @dmtrKovalenko/date-io library and provides an adapter for the js-joda date library
 
 **PLEASE NOTE:** Currently version 2 of @date-io/core is _NOT_ supported. This js-joda adapter is written to work with version v1.3.13 of @date-io/core.
 
