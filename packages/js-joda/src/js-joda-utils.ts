@@ -5,11 +5,14 @@ import {
   IsoFields,
   LocalDateTime,
   ZonedDateTime,
+  DateTimeParseException,
   DateTimeFormatter,
   Instant,
   ZoneOffset
 } from "@js-joda/core";
 import { IUtils /*, DateIOFormats */ } from "@date-io/core/IUtils";
+import { DateType as Temporal } from "@date-io/type";
+
 //import { WeekFields } from '@js-joda/locale/dist/js-joda-locale';
 
 // v2.0.0
@@ -42,15 +45,13 @@ import { IUtils /*, DateIOFormats */ } from "@date-io/core/IUtils";
 //   keyboardDateTime24h: "yyyy/MM/dd HH:mm"
 // };
 
-export default class JsJodaUtils implements IUtils<LocalDateTime> {
+// type Temporal = LocalDateTime | Error;
+
+export default class JsJodaUtils implements IUtils<Temporal> {
   public locale?: any;
 
   constructor({ locale } = { locale: undefined }) {
     if (locale) {
-      // Weird Hack to execute the locale's module scope, which is needed to register locale
-      require(`@js-joda/locale_${locale
-        .language()
-        .toLowerCase()}-${locale.country().toLowerCase()}`);
       this.locale = locale;
     }
   }
@@ -70,58 +71,93 @@ export default class JsJodaUtils implements IUtils<LocalDateTime> {
   public dateFormat = "MMMM d";
 
   // @Deprecated
-  public getCalendarHeaderText(date: LocalDateTime) {
+  public getCalendarHeaderText(date: Temporal) {
+    if (date instanceof Error) {
+      throw date;
+    }
     let formatter = DateTimeFormatter.ofPattern(this.yearMonthFormat).withLocale(
       this.locale
     );
     return date.format(formatter);
   }
 
-  public getYearText(date: LocalDateTime) {
+  public getYearText(date: Temporal) {
+    if (date instanceof Error) {
+      throw date;
+    }
     let formatter = DateTimeFormatter.ofPattern(this.yearFormat).withLocale(this.locale);
     return date.format(formatter);
   }
 
-  public getDatePickerHeaderText(date: LocalDateTime) {
+  public getDatePickerHeaderText(date: Temporal) {
+    if (date instanceof Error) {
+      throw date;
+    }
     let formatter = DateTimeFormatter.ofPattern("EEE, MMM d").withLocale(this.locale);
     return date.format(formatter);
   }
 
-  public getDateTimePickerHeaderText(date: LocalDateTime) {
+  public getDateTimePickerHeaderText(date: Temporal) {
+    if (date instanceof Error) {
+      throw date;
+    }
     return this.format(date, "MMM d");
   }
 
-  public getMonthText(date: LocalDateTime) {
+  public getMonthText(date: Temporal) {
+    if (date instanceof Error) {
+      throw date;
+    }
     return this.format(date, "MMMM");
   }
 
-  public getDayText(date: LocalDateTime) {
+  public getDayText(date: Temporal) {
+    if (date instanceof Error) {
+      throw date;
+    }
     return this.format(date, "d");
   }
 
-  public getHourText(date: LocalDateTime, ampm: boolean) {
+  public getHourText(date: Temporal, ampm: boolean) {
+    if (date instanceof Error) {
+      throw date;
+    }
     return this.format(date, ampm ? "hh" : "HH");
   }
 
-  public getMinuteText(date: LocalDateTime) {
+  public getMinuteText(date: Temporal) {
+    if (date instanceof Error) {
+      throw date;
+    }
     return this.format(date, "mm");
   }
 
-  public getSecondText(date: LocalDateTime) {
+  public getSecondText(date: Temporal) {
+    if (date instanceof Error) {
+      throw date;
+    }
     return this.format(date, "ss");
   }
   // EOF @Deprecated
 
-  public parse(value: string, format: string): LocalDateTime | null {
+  public parse(value: string, format: string): Temporal | null {
     if (value === "") {
       return null;
     }
 
     let formatter = DateTimeFormatter.ofPattern(format).withLocale(this.locale);
-    return LocalDateTime.parse(value, formatter);
+
+    try {
+      return LocalDateTime.parse(value, formatter);
+    } catch (ex) {
+      if (ex instanceof DateTimeParseException) {
+        return ex;
+      }
+      throw ex;
+    }
   }
 
-  public date(value?: any): LocalDateTime | null {
+  public date(value?: any): Temporal | null {
     if (value === null) {
       return null;
     }
@@ -144,6 +180,10 @@ export default class JsJodaUtils implements IUtils<LocalDateTime> {
       return value;
     }
 
+    if (value instanceof Error) {
+      return value;
+    }
+
     if (value instanceof Date) {
       const instant = Instant.ofEpochMilli(value.valueOf());
       return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
@@ -152,11 +192,15 @@ export default class JsJodaUtils implements IUtils<LocalDateTime> {
     throw new Error(`Unknown Date value in function date(): ${value}`);
   }
 
-  public isNull(date: LocalDateTime | null): boolean {
+  public isNull(date: Temporal | null): boolean {
     return date === null;
   }
 
   public isValid(value: any): boolean {
+    if (value instanceof Error) {
+      return false;
+    }
+
     if (value === null) {
       return false;
     }
@@ -181,23 +225,37 @@ export default class JsJodaUtils implements IUtils<LocalDateTime> {
   }
 
   public getDiff(value: any, comparing: any): number {
-    const duration = Duration.between(this.date(comparing), this.date(value));
+    const first = this.date(comparing);
+    const second = this.date(value);
+    if (first instanceof Error || second instanceof Error) {
+      throw first instanceof Error ? first : second;
+    }
+    const duration = Duration.between(first, second);
     return duration.toMillis();
   }
 
   public isEqual(value: any, comparing: any): boolean {
-    value = this.date(value);
-    comparing = this.date(comparing);
-    if (value === null && comparing === null) {
+    const first = this.date(value);
+    const second = this.date(comparing);
+    if (first === null && second === null) {
       return true;
     }
-    if (value === null) {
+    if (first === null || second === null) {
       return false;
     }
-    return value.equals(comparing);
+    if (first instanceof Error || second instanceof Error) {
+      throw first || second;
+    }
+    return first.equals(second);
   }
 
   public isSameDay(date: LocalDateTime, comparing: LocalDateTime): boolean {
+    if (date === null && comparing === null) {
+      return true;
+    }
+    if (date === null || comparing === null) {
+      return false;
+    }
     return (
       date.dayOfMonth() === comparing.dayOfMonth() &&
       date.monthValue() === comparing.monthValue() &&
@@ -317,7 +375,7 @@ export default class JsJodaUtils implements IUtils<LocalDateTime> {
   }
 
   // v2.0.0
-  // public format(date: LocalDateTime, formatKey: keyof DateIOFormats): string {
+  // public format(date: Temporal, formatKey: keyof DateIOFormats): string {
   //   let formatter = DateTimeFormatter.ofPattern(formatKey).withLocale(this.locale);
   //   return date.format(formatter);
   // }
