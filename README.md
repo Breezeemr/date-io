@@ -43,16 +43,47 @@ $ npm install @prinzdezibel/date-io-js-joda
 ### Usage example
 
 ```js
-import JsJodaUtils from "../packages/js-joda/src";
+import JsJodaUtilsConstructor from "../packages/js-joda/src";
 import { Locale as JsJodaLocale } from "@js-joda/locale_en-us";
+import { LocalDateTime } from "@js-joda/core";
 
-const jsJoda = new JsJodaUtils({ locale: JsJodaLocale.US }); // pass US locale
+const Constructor = JsJodaUtilsConstructor(LocalDateTime); // one of LocalDateTime, LocalDate, LocalTime
+
+const jsJoda = new Constructor({ locale: JsJodaLocale.US }); // pass US locale
 
 const initialJsJodaDate = jsJoda.date("2018-10-28T11:44:00.000Z");
 
 const updatedJodaDate = jsJoda.addDays(initialJsJodaDate, 2);
 
 console.log(jsJoda.format(updatedJodaDate, jsJoda.dateTime24hFormat)); // "October 30 11:44"
+```
+
+### Example for usage with JSX
+
+```jsx
+import JsJodaUtilsConstructor from "../packages/js-joda/src";
+import { Locale as JsJodaLocale } from "@js-joda/locale_en-us";
+import { LocalDate } from "@js-joda/core";
+
+const Constructor = JsJodaUtilsConstructor(LocalDate);
+const utils = new Constructor({ locale: JsJodaLocale.US });
+
+function LocalDatePickerWithoutTime() {
+  return (
+    <MuiPickersUtilsProvider utils={utils} locale={JsJodaLocale.GERMANY}>
+      <KeyboardDatePicker
+        format="dd.MM.yyyy"
+        value={date}
+        onChange={onChange}
+        placeholder={placeholder}
+        inputProps={{ size: 10 }}
+        onError={onError}
+        {...(error ? { error } : {})}
+        {...(helperText ? { helperText } : {})}
+      />
+    </MuiPickersUtilsProvider>
+  );
+}
 ```
 
 ### Interface
