@@ -12,10 +12,9 @@ import {
   Instant,
   ZoneOffset
 } from "@js-joda/core";
-import { IUtils /*, DateIOFormats */ } from "@date-io/core/IUtils";
-import { DateType } from "@date-io/type";
+import { IUtils } from "@date-io/core/IUtils";
 
-//import { WeekFields } from '@js-joda/locale/dist/js-joda-locale';
+declare function assumeType<T>(x: unknown): asserts x is T;
 
 // v2.0.0
 //
@@ -47,13 +46,13 @@ import { DateType } from "@date-io/type";
 //   keyboardDateTime24h: "yyyy/MM/dd HH:mm"
 // };
 
-// type Temporal = LocalDateTime | Error;
+type DateType<A> = A | Error;
+type CalendarType = LocalDateTime | LocalDate;
+type Temporal = LocalDateTime | LocalDate | LocalTime;
+type TConst = typeof LocalDateTime | typeof LocalDate | typeof LocalTime;
 
-type C = typeof LocalDateTime | typeof LocalDate | typeof LocalTime;
-type T = LocalDateTime | LocalDate | LocalTime;
-
-export default function createJsJodaUtils<TConst extends C>(temporalType: TConst): any {
-  return class JsJodaUtils implements IUtils<DateType<T>> {
+export default function JsJodaUtilsConstructor(temporalType: TConst): any {
+  return class JsJodaUtils implements IUtils<DateType<Temporal>> {
     public locale?: any;
 
     constructor({ locale } = { locale: undefined }) {
@@ -77,7 +76,7 @@ export default function createJsJodaUtils<TConst extends C>(temporalType: TConst
     public dateFormat = "MMMM d";
 
     // @Deprecated
-    public getCalendarHeaderText(date: DateType<T>) {
+    public getCalendarHeaderText(date: DateType<Temporal>) {
       if (date instanceof Error) {
         throw date;
       }
@@ -87,7 +86,7 @@ export default function createJsJodaUtils<TConst extends C>(temporalType: TConst
       return date.format(formatter);
     }
 
-    public getYearText(date: DateType<T>) {
+    public getYearText(date: DateType<Temporal>) {
       if (date instanceof Error) {
         throw date;
       }
@@ -97,7 +96,7 @@ export default function createJsJodaUtils<TConst extends C>(temporalType: TConst
       return date.format(formatter);
     }
 
-    public getDatePickerHeaderText(date: DateType<T>) {
+    public getDatePickerHeaderText(date: DateType<Temporal>) {
       if (date instanceof Error) {
         throw date;
       }
@@ -105,42 +104,42 @@ export default function createJsJodaUtils<TConst extends C>(temporalType: TConst
       return date.format(formatter);
     }
 
-    public getDateTimePickerHeaderText(date: DateType<T>) {
+    public getDateTimePickerHeaderText(date: DateType<Temporal>) {
       if (date instanceof Error) {
         throw date;
       }
       return this.format(date, "MMM d");
     }
 
-    public getMonthText(date: DateType<T>) {
+    public getMonthText(date: DateType<Temporal>) {
       if (date instanceof Error) {
         throw date;
       }
       return this.format(date, "MMMM");
     }
 
-    public getDayText(date: DateType<T>) {
+    public getDayText(date: DateType<Temporal>) {
       if (date instanceof Error) {
         throw date;
       }
       return this.format(date, "d");
     }
 
-    public getHourText(date: DateType<T>, ampm: boolean) {
+    public getHourText(date: DateType<Temporal>, ampm: boolean) {
       if (date instanceof Error) {
         throw date;
       }
       return this.format(date, ampm ? "hh" : "HH");
     }
 
-    public getMinuteText(date: DateType<T>) {
+    public getMinuteText(date: DateType<Temporal>) {
       if (date instanceof Error) {
         throw date;
       }
       return this.format(date, "mm");
     }
 
-    public getSecondText(date: DateType<T>) {
+    public getSecondText(date: DateType<Temporal>) {
       if (date instanceof Error) {
         throw date;
       }
@@ -148,7 +147,7 @@ export default function createJsJodaUtils<TConst extends C>(temporalType: TConst
     }
     // EOF @Deprecated
 
-    public parse(value: string, format: string): DateType<T> | null {
+    public parse(value: string, format: string): DateType<Temporal> | null {
       if (value === "") {
         return null;
       }
@@ -165,7 +164,7 @@ export default function createJsJodaUtils<TConst extends C>(temporalType: TConst
       }
     }
 
-    public date(value?: any): DateType<T> | null {
+    public date(value?: any): DateType<Temporal> | null {
       if (value === null) {
         return null;
       }
@@ -184,7 +183,11 @@ export default function createJsJodaUtils<TConst extends C>(temporalType: TConst
         return localDateTime;
       }
 
-      if (value instanceof temporalType) {
+      if (
+        value instanceof LocalDateTime ||
+        value instanceof LocalTime ||
+        value instanceof LocalDate
+      ) {
         return value;
       }
 
@@ -200,7 +203,7 @@ export default function createJsJodaUtils<TConst extends C>(temporalType: TConst
       throw new Error(`Unknown Date value in function date(): ${value}`);
     }
 
-    public isNull(date: DateType<T> | null): boolean {
+    public isNull(date: DateType<Temporal> | null): boolean {
       return date === null;
     }
 
@@ -294,7 +297,17 @@ export default function createJsJodaUtils<TConst extends C>(temporalType: TConst
       return date.isAfter(value);
     }
 
-    public isAfterDay(date: LocalDateTime, value: LocalDateTime): boolean {
+    public isAfterDay(
+      date: LocalDateTime | LocalDate,
+      value: LocalDateTime | LocalDate
+    ): boolean {
+      if (date instanceof LocalDate) {
+        date = LocalDateTime.of(date, LocalTime.of(0, 0, 0));
+      }
+      if (value instanceof LocalDate) {
+        value = LocalDateTime.of(value, LocalTime.of(0, 0, 0));
+      }
+
       return date.isAfter(
         value
           .plusDays(1)
@@ -321,7 +334,17 @@ export default function createJsJodaUtils<TConst extends C>(temporalType: TConst
       return date.isBefore(value);
     }
 
-    public isBeforeDay(date: LocalDateTime, value: LocalDateTime): boolean {
+    public isBeforeDay(
+      date: LocalDateTime | LocalDate,
+      value: LocalDateTime | LocalDate
+    ): boolean {
+      if (date instanceof LocalDate) {
+        date = LocalDateTime.of(date, LocalTime.of(0, 0, 0));
+      }
+      if (value instanceof LocalDate) {
+        value = LocalDateTime.of(value, LocalTime.of(0, 0, 0));
+      }
+
       return date.isBefore(
         value
           .withHour(0)
@@ -342,60 +365,83 @@ export default function createJsJodaUtils<TConst extends C>(temporalType: TConst
       );
     }
 
-    public startOfMonth(date: LocalDateTime): LocalDateTime {
-      return date
-        .withDayOfMonth(1)
-        .withHour(0)
-        .withMinute(0)
-        .withSecond(0)
-        .withNano(0);
+    public startOfMonth(date: LocalDateTime): LocalDateTime;
+    public startOfMonth(date: LocalDate): LocalDate;
+    public startOfMonth(date) {
+      if (date instanceof LocalDateTime) {
+        return date
+          .withDayOfMonth(1)
+          .withHour(0)
+          .withMinute(0)
+          .withSecond(0)
+          .withNano(0);
+      }
+      return date.withDayOfMonth(1);
     }
 
-    public endOfMonth(date: LocalDateTime): LocalDateTime {
+    public endOfMonth(date: LocalDateTime): LocalDateTime;
+    public endOfMonth(date: LocalDate): LocalDate;
+    public endOfMonth(date) {
+      if (date instanceof LocalDateTime) {
+        return date
+          .plusMonths(1)
+          .withDayOfMonth(1)
+          .withHour(0)
+          .withMinute(0)
+          .withSecond(0)
+          .minusNanos(1);
+      }
       return date
         .plusMonths(1)
         .withDayOfMonth(1)
-        .withHour(0)
-        .withMinute(0)
-        .withSecond(0)
-        .minusNanos(1);
+        .minusDays(1);
     }
 
     public addDays(date: LocalDateTime, count: number): LocalDateTime {
       return date.plusDays(count);
     }
 
-    public startOfDay(date: LocalDateTime): LocalDateTime {
-      return date
-        .withHour(0)
-        .withMinute(0)
-        .withSecond(0)
-        .withNano(0);
+    public startOfDay(date: DateType<LocalDateTime>): LocalDateTime;
+    public startOfDay(date: DateType<LocalDate>): LocalDate;
+    public startOfDay(date) {
+      if (date instanceof LocalDateTime) {
+        return date
+          .withHour(0)
+          .withMinute(0)
+          .withSecond(0)
+          .withNano(0);
+      }
+
+      return date;
     }
 
-    public endOfDay(date: LocalDateTime): LocalDateTime {
-      return date
-        .plusDays(1)
-        .withHour(0)
-        .withMinute(0)
-        .withSecond(0)
-        .minusNanos(1);
+    public endOfDay(date: DateType<LocalDateTime>): LocalDateTime;
+    public endOfDay(date: DateType<LocalDate>): LocalDate;
+    public endOfDay(date) {
+      if (date instanceof LocalDateTime) {
+        return date
+          .plusDays(1)
+          .withHour(0)
+          .withMinute(0)
+          .withSecond(0)
+          .minusNanos(1);
+      }
+      return date;
     }
 
     // v2.0.0
-    // public format(date: DateType<T>, formatKey: keyof DateIOFormats): string {
+    // public format(date: DateType<Temporal>, formatKey: keyof DateIOFormats): string {
     //   let formatter = DateTimeFormatter.ofPattern(formatKey).withLocale(this.locale);
     //   return date.format(formatter);
     // }
 
     // @Deprecated
-    public format(date: DateType<T>, formatString: string): string {
+    public format(date: Temporal, formatString: string): string {
       let formatter = DateTimeFormatter.ofPattern(formatString).withLocale(this.locale);
-      debugger;
       return date.format(formatter);
     }
 
-    public formatByString(date: DateType<T>, formatString: string): string {
+    public formatByString(date: Temporal, formatString: string): string {
       let formatter = DateTimeFormatter.ofPattern(formatString).withLocale(this.locale);
       return date.format(formatter);
     }
@@ -467,7 +513,13 @@ export default function createJsJodaUtils<TConst extends C>(temporalType: TConst
       return date.withYear(year);
     }
 
-    public mergeDateAndTime(date: LocalDateTime, time: LocalDateTime): LocalDateTime {
+    public mergeDateAndTime(
+      date: LocalDateTime | LocalDate,
+      time: LocalDateTime | LocalDate
+    ): LocalDateTime | LocalDate {
+      if (date instanceof LocalDate || time instanceof LocalDate) {
+        return date;
+      }
       return date
         .withHour(time.hour())
         .withMinute(time.minute())
@@ -487,20 +539,22 @@ export default function createJsJodaUtils<TConst extends C>(temporalType: TConst
       return weekdays;
     }
 
-    public getWeekArray(date: LocalDateTime): LocalDateTime[][] {
+    public getWeekArray(date: LocalDateTime): LocalDateTime[][];
+    public getWeekArray(date: LocalDate): LocalDate[][];
+    public getWeekArray(date) {
       if (!this.locale) {
         throw new Error("Function getWeekArray() requires a locale to be set.");
       }
 
-      const start = this.startOfWeek(this.startOfMonth(date));
-      const end = this.endOfWeek(this.endOfMonth(date));
+      let startOfMonth = this.startOfMonth(date);
+      let endOfMonth = this.endOfMonth(date);
 
-      // const weekOfWeekBasedYear = date.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
-      // const weekBasedYear = date.get(IsoFields.WEEK_BASED_YEAR)
+      const start = this.startOfWeek(startOfMonth);
+      const end = this.endOfWeek(endOfMonth);
 
       let count = 0;
       let current = start;
-      const nestedWeeks: LocalDateTime[][] = [];
+      const nestedWeeks: CalendarType[][] = [];
 
       while (current.isBefore(end)) {
         const weekNumber = Math.floor(count / 7);
@@ -512,29 +566,50 @@ export default function createJsJodaUtils<TConst extends C>(temporalType: TConst
       return nestedWeeks;
     }
 
-    public getYearRange(start: LocalDateTime, end: LocalDateTime): LocalDateTime[] {
-      const startDate = start
-        .withDayOfYear(1)
-        .withHour(0)
-        .withMinute(0)
-        .withSecond(0)
-        .withNano(0);
-
-      const endDate = end
-        .plusYears(1)
-        .withDayOfYear(1)
-        .withHour(0)
-        .withMinute(0)
-        .withSecond(0)
-        .withNano(0);
-
-      const years: LocalDateTime[] = [];
-
-      let current = startDate;
-      while (current.isBefore(endDate)) {
-        years.push(current);
-        current = current.plusYears(1);
+    public getYearRange(
+      start: DateType<LocalDateTime>,
+      end: DateType<LocalDateTime>
+    ): LocalDateTime[];
+    public getYearRange(
+      start: DateType<LocalDate>,
+      end: DateType<LocalDate>
+    ): LocalDate[];
+    public getYearRange(start, end) {
+      if (start instanceof Error || end instanceof Error) {
+        throw new Error("getYearRange(): Invalid type for parameter start and/or end.");
       }
+      const years: CalendarType[] = [];
+
+      if (start instanceof LocalDateTime) {
+        let startDate = start
+          .withDayOfYear(1)
+          .withHour(0)
+          .withMinute(0)
+          .withSecond(0)
+          .withNano(0);
+
+        const endDate = end
+          .plusYears(1)
+          .withDayOfYear(1)
+          .withHour(0)
+          .withMinute(0)
+          .withSecond(0)
+          .withNano(0);
+
+        while (startDate.isBefore(endDate)) {
+          years.push(startDate);
+          startDate = startDate.plusYears(1);
+        }
+      } else if (start instanceof LocalDate) {
+        let startDate = start.withDayOfYear(1);
+        const endDate = end.plusYears(1).withDayOfYear(1);
+
+        while (startDate.isBefore(endDate)) {
+          years.push(startDate);
+          startDate = startDate.plusYears(1);
+        }
+      }
+
       return years;
     }
 
@@ -554,25 +629,35 @@ export default function createJsJodaUtils<TConst extends C>(temporalType: TConst
       return ampm === "am" ? "AM" : "PM";
     }
 
-    private startOfWeek(value: LocalDateTime): LocalDateTime {
+    private startOfWeek(value: LocalDateTime): LocalDateTime;
+    private startOfWeek(value: LocalDate): LocalDate;
+    private startOfWeek(value) {
       const dayOfWeek = value.dayOfWeek().value();
-      return value
-        .minusDays(dayOfWeek - this.startDayOfWeek())
-        .withHour(0)
-        .withMinute(0)
-        .withSecond(0)
-        .withNano(0);
+      if (value instanceof LocalDateTime) {
+        return value
+          .minusDays(dayOfWeek - this.startDayOfWeek())
+          .withHour(0)
+          .withMinute(0)
+          .withSecond(0)
+          .withNano(0);
+      }
+      return value.minusDays(dayOfWeek - this.startDayOfWeek());
     }
 
-    private endOfWeek(value: LocalDateTime): LocalDateTime {
+    private endOfWeek(value: LocalDateTime): LocalDateTime;
+    private endOfWeek(value: LocalDate): LocalDate;
+    private endOfWeek(value) {
       const dayOfWeek = value.dayOfWeek().value();
-      return value
-        .plusDays(7 - (dayOfWeek - this.startDayOfWeek()))
-        .withHour(0)
-        .withMinute(0)
-        .withSecond(0)
-        .withNano(0)
-        .minusNanos(1);
+      if (value instanceof LocalDateTime) {
+        return value
+          .plusDays(7 - (dayOfWeek - this.startDayOfWeek()))
+          .withHour(0)
+          .withMinute(0)
+          .withSecond(0)
+          .withNano(0)
+          .minusNanos(1);
+      }
+      return value.plusDays(7 - (dayOfWeek - this.startDayOfWeek()));
     }
   };
 }
