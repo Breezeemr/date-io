@@ -61,16 +61,15 @@ console.log(jsJoda.format(updatedJodaDate, jsJoda.dateTime24hFormat)); // "Octob
 ### Example for usage with JSX
 
 ```jsx
-import JsJodaUtilsConstructor from "../packages/js-joda/src";
+import createJsJodaUtils from "../packages/js-joda/src";
 import { Locale as JsJodaLocale } from "@js-joda/locale_en-us";
 import { LocalDate } from "@js-joda/core";
 
-const Constructor = JsJodaUtilsConstructor(LocalDate);
-const utils = new Constructor({ locale: JsJodaLocale.US });
+const utils = createJsJodaUtils(LocalDate);
 
 function LocalDatePickerWithoutTime() {
   return (
-    <MuiPickersUtilsProvider utils={utils} locale={JsJodaLocale.GERMANY}>
+    <MuiPickersUtilsProvider utils={utils} locale={JsJodaLocale.US}>
       <KeyboardDatePicker
         format="dd.MM.yyyy"
         value={date}
