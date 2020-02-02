@@ -14,7 +14,9 @@ import {
 } from "@js-joda/core";
 import { IUtils } from "@date-io/core/IUtils";
 
-declare function assumeType<T>(x: unknown): asserts x is T;
+function assumeType<T>(x: unknown): asserts x is T {
+  return;
+}
 
 // v2.0.0
 //
@@ -330,10 +332,6 @@ export default function JsJodaUtilsConstructor(temporalType: TConst): any {
       );
     }
 
-    public isBefore(date: LocalDateTime, value: LocalDateTime): boolean {
-      return date.isBefore(value);
-    }
-
     public isBeforeDay(
       date: LocalDateTime | LocalDate,
       value: LocalDateTime | LocalDate
@@ -580,37 +578,43 @@ export default function JsJodaUtilsConstructor(temporalType: TConst): any {
       }
       const years: CalendarType[] = [];
 
+      let startDate: CalendarType;
+      let endDate: CalendarType;
       if (start instanceof LocalDateTime) {
-        let startDate = start
+        startDate = start
           .withDayOfYear(1)
           .withHour(0)
           .withMinute(0)
           .withSecond(0)
           .withNano(0);
 
-        const endDate = end
+        endDate = end
           .plusYears(1)
           .withDayOfYear(1)
           .withHour(0)
           .withMinute(0)
           .withSecond(0)
           .withNano(0);
-
-        while (startDate.isBefore(endDate)) {
-          years.push(startDate);
-          startDate = startDate.plusYears(1);
-        }
       } else if (start instanceof LocalDate) {
-        let startDate = start.withDayOfYear(1);
-        const endDate = end.plusYears(1).withDayOfYear(1);
-
-        while (startDate.isBefore(endDate)) {
-          years.push(startDate);
-          startDate = startDate.plusYears(1);
-        }
+        startDate = start.withDayOfYear(1);
+        endDate = end.plusYears(1).withDayOfYear(1);
       }
 
+      while (this.isBefore(startDate, endDate)) {
+        years.push(startDate);
+        startDate = startDate.plusYears(1);
+      }
       return years;
+    }
+
+    public isBefore(date: CalendarType, value: CalendarType): boolean {
+      if (date instanceof LocalDateTime) {
+        assumeType<LocalDateTime>(value);
+        return date.isBefore(value);
+      } else if (date instanceof LocalDate) {
+        assumeType<LocalDate>(value);
+        return date.isBefore(value);
+      }
     }
 
     private startDayOfWeek(): number {
