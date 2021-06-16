@@ -328,7 +328,7 @@ export default function JsJodaUtilsConstructor(temporalType: TConst): any {
         date = LocalDateTime.of(date, LocalTime.of(0, 0, 0));
       }
       if (value instanceof LocalDate) {
-        date = LocalDateTime.of(date, LocalTime.of(0, 0, 0));
+        value = LocalDateTime.of(value, LocalTime.of(0, 0, 0));
       }
       return date.isAfter(
         value
